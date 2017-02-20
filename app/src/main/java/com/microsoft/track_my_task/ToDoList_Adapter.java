@@ -74,7 +74,7 @@ class ToDoList_Adapter extends BaseAdapter {
         // TODO Auto-generated method stub
         Holder holder=new Holder();
         View rowView;
-        rowView = inflater.inflate(R.layout.customTasks, null);
+        rowView = inflater.inflate(R.layout.custom_tasks, null);
         holder.tv=(TextView) rowView.findViewById(R.id.lw1);
         holder.del=(Button) rowView.findViewById(R.id.del);
         holder.edit=(Button) rowView.findViewById(R.id.edit);
