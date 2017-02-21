@@ -82,6 +82,7 @@ public class HomeActivity extends AppCompatActivity
                     if (date.equals(new Date(db.getDate("today")))) {
 
                         tasks_today.add(cursor.getString(0));
+                        Log.i(TAG, "onCreate: task today" + cursor.getString(0));
                         Log.i(TAG, "onCreate: today " + date);
                         today.setVisibility(View.VISIBLE);
 
@@ -91,6 +92,8 @@ public class HomeActivity extends AppCompatActivity
                         upcoming.setVisibility(View.VISIBLE);
                     }
                 } while (cursor.moveToNext());
+                Log.i(TAG, "onCreate: todays task" + tasks_today
+         );
                 db.close();
             }
         }
@@ -231,8 +234,6 @@ public class HomeActivity extends AppCompatActivity
         } else if (id == R.id.sTasks) {
             Intent intent = new Intent(HomeActivity.this, SavedTasks.class);
             startActivity(intent);
-
-        } else if (id == R.id.nav_send) {
 
         }
 

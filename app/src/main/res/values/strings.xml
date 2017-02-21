@@ -9,7 +9,7 @@
     <string name="action_settings">Settings</string>
     <string name="title_activity_maps">Map</string>
     <string name="title_activity_location_represent">Map</string>
-    <string name="TodayS_Tasks"> Today's Tasks</string>
+    <string name="TodayS_Tasks"> Todays Tasks</string>
     <string name="PendingS_Tasks"> Pending Tasks</string>
     <string name="Upcoming_task">Upcoming Tasks</string>
     <string name="Start_Tracking">Start My Tracking</string>

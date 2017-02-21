@@ -28,10 +28,10 @@ public class SettingsPage extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.settings_page);
 
-        save_changes = (Button) findViewById(R.id.settings_save);
+        //save_changes = (Button) findViewById(R.id.settings_save);
         /*customize = (Button) findViewById(R.id.customize);*/
 
-        proximity = (EditText) findViewById(R.id.distance);
+        //proximity = (EditText) findViewById(R.id.distance);
 
 
 
