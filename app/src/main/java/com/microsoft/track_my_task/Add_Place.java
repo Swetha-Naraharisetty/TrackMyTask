@@ -37,17 +37,12 @@ public class Add_Place extends Activity {
         map.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-               // locationChecker(mGoogleApiClient, Add_Place.this);
-//                SharedPreferences.Editor editor = sp.edit();
-//
-//                String s1 = Place_name.getText().toString();
-//                editor.putBoolean("string", true);
-//                editor.putString("name",s1 );
-//                editor.commit();
+
                 Intent intent = new Intent(Add_Place.this, Maps_Place_Activity.class);
                 Toast.makeText(Add_Place.this, "Maps", Toast.LENGTH_SHORT).show();
                 Log.i("Place_name",String.valueOf(Place_name.getText()) );
                 intent.putExtra("Place_name",(Place_name.getText()).toString());
+                finish();
                 startActivity(intent);
             }
         });
@@ -55,20 +50,13 @@ public class Add_Place extends Activity {
         save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-               // String s1 = sp.getString("name","my_place");
-                //Place_name.setText(s1);
-              /*  Bundle bundle = getIntent().getParcelableExtra("bundle");
-                latLng = bundle.getParcelable("Lat_Lng");*/
+
                 Double latitude = getIntent().getDoubleExtra("latitude", 0);
                 Double longitude = getIntent().getDoubleExtra("longitude", 0);
                 String Place = getIntent().getStringExtra("Place_name");
                 latLng = new LatLng(latitude, longitude);
 
-//                if(latLng == null){
-//                    map.requestFocus();
-//                    map.setError("no Map selected");
-//                    Toast.makeText(Add_Place.this, "no Map selected", Toast.LENGTH_SHORT);
-//                }else
+//
                 if(Place_name.getText().toString() == null){
                     Place_name.requestFocus();
                     Place_name.setError("Field Cannot be empty ");
@@ -88,12 +76,15 @@ public class Add_Place extends Activity {
                     if (!isInsert) {
                         Toast.makeText(Add_Place.this, "location name  ALREADY EXISTS", Toast.LENGTH_SHORT).show();
                     } else {
+
                         Intent intent = new Intent(Add_Place.this, My_Location.class);
+                        finish();
                         startActivity(intent);
                     }
                 }
             }
         });
+        //finish();
     }
 
 

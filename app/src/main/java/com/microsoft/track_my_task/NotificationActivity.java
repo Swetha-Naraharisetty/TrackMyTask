@@ -10,29 +10,38 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
 public class NotificationActivity extends AppCompatActivity {
+    private static final String TAG = "NotificationActivity";
     int hour, am_pm, minutes;
+    int delFlag = -1;
+    String dTask = "";
+    Database db = new Database(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_notification);
-        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        // super.onCreate(savedInstanceState);
+        //setContentView(R.layout.activity_notification);
+        delFlag = getIntent().getFlags();
+        // to dimiss the task when reached the location
+        Log.i(TAG, "onCreate: delFlag" + delFlag);
+        if (delFlag == 0) {
+            Log.i(TAG, "onCreate: in delFlag");
+            dTask = getIntent().getStringExtra("task_name");
+            db.del_Task(dTask);
+            Toast.makeText(NotificationActivity.this, "Task Deleted", Toast.LENGTH_SHORT).show();
+        }
+       /* AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         Intent notificationIntent = new Intent("android.media.action.DISPLAY_NOTIFICATION");
         notificationIntent.addCategory("android.intent.category.DEFAULT");
 
         PendingIntent broadcast = PendingIntent.getBroadcast(this, 100, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        Calendar calendar = GregorianCalendar.getInstance();
-        am_pm = calendar.get(Calendar.AM_PM);
-        hour = calendar.get(Calendar.HOUR_OF_DAY);
-        minutes = calendar.get(Calendar.MINUTE);
-        Log.i("hour", String.valueOf(hour));
-        if(hour == 10 || hour == 20 ){
+
 
             Calendar cal = Calendar.getInstance();
             alarmManager.set(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), broadcast);
@@ -45,6 +54,7 @@ public class NotificationActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
 
-        }
+
+    }*/
     }
 }

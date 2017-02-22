@@ -37,6 +37,8 @@ public class My_Location extends Activity {
             @Override
             public void onClick(View v) {
                 Intent  intent = new Intent(My_Location.this, HomeActivity.class);
+                finish();
+
                 startActivity(intent);
             }
         });
@@ -71,5 +73,6 @@ public class My_Location extends Activity {
             }
 
         });
+
     }
 }

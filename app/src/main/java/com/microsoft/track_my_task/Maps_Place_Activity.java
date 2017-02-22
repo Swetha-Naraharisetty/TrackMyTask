@@ -70,11 +70,13 @@ public class Maps_Place_Activity extends FragmentActivity implements OnMapReadyC
                 intent.putExtra("Place_name",address);
                 intent.putExtra("latitude", Plat_lng.latitude);
                 intent.putExtra("longitude", Plat_lng.longitude);
+                finish();
                 startActivity(intent);
                 //setResult(Activity.RESULT_OK,intent);
                 //finish();
 
             }
+
         }
     }
 

@@ -69,13 +69,11 @@ public class MapsActivityNewPlace extends FragmentActivity implements OnMapReady
                 intent.putExtra("latitude", lat_lng.latitude);
                 intent.putExtra("longitude", lat_lng.longitude);
                 intent.putExtra("Place_name", address);
+                finish();
                 startActivity(intent);
-               // setResult(Activity.RESULT_OK,intent);
-               // finish();
-
-
 
             }
+            finish();
         }
     }
 

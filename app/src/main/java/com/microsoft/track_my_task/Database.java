@@ -6,15 +6,19 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
+import android.view.View;
 
 import com.google.android.gms.maps.model.LatLng;
 
 import java.sql.Time;
+import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+
+import static android.content.ContentValues.TAG;
 
 /**
  * Created by Ayshu on 05-Dec-16.
@@ -22,8 +26,8 @@ import java.util.Date;
  */
 public class Database extends SQLiteOpenHelper {
     private static String TAG = "info";
-    public Database(Context context)
-    {
+
+    public Database(Context context) {
         super(context, "Database.db", null, 1);
 
     }
@@ -38,7 +42,7 @@ public class Database extends SQLiteOpenHelper {
         db.execSQL("create table Saved_tasks" + "( task_name TEXT PRIMARY KEY,  latitude DOUBLE, longitude DOUBLE, Place_name TEXT)");
         //date fromat dd-mm-yyyy
         Log.i(TAG, "onCreate: table Saved_tasks created");
-        db.execSQL("create table settings" + "(  distance DOUBLE, morning_time INTEGER , evening_time INTEGER  )");
+        db.execSQL("create table settings" + "(key INTEGER,  distance INTEGER, morning_time Text , evening_time Text)");
         Log.i(TAG, "onCreate: settings table");
     }
 
@@ -52,26 +56,24 @@ public class Database extends SQLiteOpenHelper {
     }
 
     // Inserting the TASK into table
-
-    public boolean insertTask(String task_name, String due_date, Double latitude , Double longitude, String Place){
+    public boolean insertTask(String task_name, String due_date, Double latitude, Double longitude, String Place) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
-        Log.i(TAG, "inserValues: " + task_name + " date : " + due_date + "latitude: " + latitude + "longitude : "+ longitude );
+        Log.i(TAG, "inserValues: " + task_name + " date : " + due_date + "latitude: " + latitude + "longitude : " + longitude + "place " + Place);
 
-        if(task_name == null || due_date == null || latitude == null || longitude == null )
+        if (task_name == null || due_date == null || latitude == null || longitude == null)
             return false;
-         else
-        {
+        else {
 
             contentValues.put("task_name", task_name);
             contentValues.put("due_date", due_date);
-            contentValues.put("latitude",latitude);
-            contentValues.put("longitude",longitude);
+            contentValues.put("latitude", latitude);
+            contentValues.put("longitude", longitude);
             contentValues.put("Place_name", Place);
 
 
             Log.i(TAG, "insertValues: inserting");
-            Log.i(TAG, "inserValues: " + task_name + " date : " + due_date + "latitude: " + latitude + "longitude : "+ longitude);
+            Log.i(TAG, "inserValues: " + task_name + " date : " + due_date + "latitude: " + latitude + "longitude : " + longitude);
 
             long result = db.insert("task", null, contentValues);
 
@@ -82,7 +84,7 @@ public class Database extends SQLiteOpenHelper {
             else
                 return true;
 
-         }
+        }
 
     }
 
@@ -90,52 +92,50 @@ public class Database extends SQLiteOpenHelper {
     public void del_Task(String task_name) {
         Log.i("task_name db = ", task_name);
         SQLiteDatabase db = this.getWritableDatabase();
-        db.execSQL("DELETE from  task where task_name = ?", new String[] {"" +task_name});
+        db.execSQL("DELETE from  task where task_name = ?", new String[]{"" + task_name});
         db.close();
 
     }
 
     // to get tasks from table
-    public  Cursor getTask(){
+    public Cursor getTask() {
         SQLiteDatabase db = this.getReadableDatabase();
         ArrayList<String> tasks = new ArrayList<>();
         String query = "select task_name, due_date from task";
         Cursor cursor = db.rawQuery(query, null);
         Log.i(TAG, "getTasks: " + cursor.getCount());
         db.close();
-        return  cursor;
+        return cursor;
 
     }
 
     // to reschedule the task
-    public boolean UpdateTask(String task_name, String due_date){
-        SQLiteDatabase db = this.getWritableDatabase();
+    public boolean UpdateTask(String task_name, String due_date) {
         ContentValues contentValues = new ContentValues();
-           //String  query = "UPDATE task SET due_date =  "+ due_date +"  WHERE " + "task_name=  " + task_name ;
-        Log.i("In update task", task_name);
+        LatLng lat_lng = getLatLngTask(task_name);
+        Double latitude = lat_lng.latitude;
+        Double longitude = lat_lng.longitude;
+        contentValues.put("latitude", latitude);
+        contentValues.put("longitude", longitude);
+        String placename= getTaskPlace(task_name);
+        Log.i(TAG, "UpdateTask: " + placename);
+        contentValues.put("Place_name", placename);
+
+        SQLiteDatabase db1 = this.getWritableDatabase();
+        //String  query = "UPDATE task SET due_date =  "+ due_date +"  WHERE " + "task_name=  " + task_name ;
+        Log.i(TAG, "UpdateTask: "+ task_name);
         //if(IsTask(task_name)){
-            Log.i("updaate task", "updating..........");
-            contentValues.put("task_name",task_name );
-            contentValues.put("due_date",due_date );
-            LatLng lat_lng = getLatLngTask(task_name);
-            Double latitude = lat_lng.latitude;
-            Double longitude = lat_lng.longitude;
-            contentValues.put("latitude",latitude );
-            contentValues.put("longitude",longitude );
-            contentValues.put("Place_name", getTaskPlace(task_name));
-           int result =  db.update("task", contentValues, " task_name= ?",new String[] {task_name });
+        Log.i(TAG, "UpdateTask: " + "updatinggg");
+        contentValues.put("task_name", task_name);
+        contentValues.put("due_date", due_date);
+        int result = db1.update("task", contentValues, "task_name = ?", new String[]{task_name});
         Log.i("update result", String.valueOf(result));
-        db.close();
+        db1.close();
         if(result > 0)
             return true;
-         else {
+        else
             return false;
-        }
-
-
-
     }
-
 
     // to get date whether to know that duration of the task
     public String getDate(String day){
@@ -146,7 +146,7 @@ public class Database extends SQLiteOpenHelper {
 
         if(day.equals("today")){
             Log.i(TAG, "onCreate: today " +  dateFormat.format(date).toString());
-           return dateFormat.format(date).toString();
+            return dateFormat.format(date).toString();
         }
 
         return null;
@@ -158,9 +158,9 @@ public class Database extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         LatLng latLng = new LatLng(0, 0);
         //if(IsTask(Task_name)){
-            double lat = getLatitudeT(Task_name);
-            double log = getLongitudeT(Task_name);
-            latLng = new LatLng(lat, log);
+        double lat = getLatitudeT(Task_name);
+        double log = getLongitudeT(Task_name);
+        latLng = new LatLng(lat, log);
 
         //}
         db.close();
@@ -206,7 +206,6 @@ public class Database extends SQLiteOpenHelper {
         return longitude;
 
     }
-
 
     // Inserting into LOCATION TABle
     public boolean insert_location(String location_name, Double latitude , Double longitude, String Place_name ){
@@ -295,7 +294,6 @@ public class Database extends SQLiteOpenHelper {
         return lngArrayList;
     }
 
-
     // to get latlng for a specific location
     LatLng getLatLng(String location_name){
         SQLiteDatabase db = this.getReadableDatabase();
@@ -342,7 +340,7 @@ public class Database extends SQLiteOpenHelper {
     Double getLongitude(String location_name){
         SQLiteDatabase db = this.getReadableDatabase();
 
-            Cursor cursor = db.rawQuery("SELECT longitude from locations where location_name = ? ",new String[] {"" +location_name} );
+        Cursor cursor = db.rawQuery("SELECT longitude from locations where location_name = ? ",new String[] {"" +location_name} );
         cursor.moveToLast();
         double longitude = cursor.getDouble(0);
         db.close();
@@ -355,18 +353,18 @@ public class Database extends SQLiteOpenHelper {
         String Place = null;
         Log.i("Location Place name", location_name);
         //if(IsLocation(location_name)){
-           // Log.i("Location Place", Place);
-            Cursor cursor = db.rawQuery("SELECT Place_name from locations where location_name = ? ",new String[] {"" +location_name} );
-            if(cursor.moveToLast()){
+        // Log.i("Location Place", Place);
+        Cursor cursor = db.rawQuery("SELECT Place_name from locations where location_name = ? ",new String[] {"" +location_name} );
+        if(cursor.moveToLast()){
 
-                Place = cursor.getString(0);
-                Log.i("lat = ", String.valueOf(Place));
+            Place = cursor.getString(0);
+            Log.i("lat = ", String.valueOf(Place));
 
 
-                Log.i("R count = ", String.valueOf(cursor.getCount()));
-                // Place = cursor.getString(4);
-                Log.i("Task Place name", cursor.getString(0));
-            }
+            Log.i("R count = ", String.valueOf(cursor.getCount()));
+            // Place = cursor.getString(4);
+            Log.i("Task Place name", cursor.getString(0));
+        }
         //}
         db.close();
         return Place;
@@ -376,33 +374,33 @@ public class Database extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         Log.i("Task Place name", Task_name);
         String Place = "not available";
-       // if(IsTask(Task_name)){
-            Cursor cursor = db.rawQuery("SELECT Place_name from task where task_name = ? ",new String[] {"" +Task_name} );
+        // if(IsTask(Task_name)){
+        Cursor cursor = db.rawQuery("SELECT Place_name from task where task_name = ? ",new String[] {"" +Task_name} );
         if(cursor.moveToLast()){
 
-                Place = cursor.getString(0);
-                Log.i("lat = ", String.valueOf(Place));
+            Place = cursor.getString(0);
+            Log.i("lat = ", String.valueOf(Place));
 
 
             Log.i("R count = ", String.valueOf(cursor.getCount()));
-           // Place = cursor.getString(4);
+            // Place = cursor.getString(4);
             Log.i("Task Place name", cursor.getString(0));
-       }
+        }
         db.close();
         return Place;
     }
 
     // to save a task
     public boolean save_Task(String task_name){
-
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues contentValues = new ContentValues();
-        Log.i("in savee task", "trying to save");
         Double lat, log;
         String Place;
         lat = getLatitudeT(task_name);
         log = getLongitudeT(task_name);
         Place = getTaskPlace(task_name);
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        Log.i("in savee task", "trying to save");
+
         Log.i(TAG, "inserValues: " + task_name + " latitude: " + lat + " longitude : "+ log + " place : " + Place);
         if(task_name == null  || lat == null || log == null || Place == null)
             return false;
@@ -449,7 +447,7 @@ public class Database extends SQLiteOpenHelper {
         if(cursor.moveToFirst()){
             do{
 
-               String task = cursor.getString(0);
+                String task = cursor.getString(0);
                 sTasks.add(task);
             }
             while (cursor.moveToNext());
@@ -458,38 +456,193 @@ public class Database extends SQLiteOpenHelper {
         return sTasks;
     }
 
+    Double getLatitudeST(String Task_name){
+        SQLiteDatabase db = this.getReadableDatabase();
 
-   public boolean insertSettings(Double distance, Integer morning_time  ,  Integer  evening_time  ){
+        Cursor cursor = db.rawQuery("SELECT latitude from Saved_tasks where task_name = ? ",new String[] {"" +Task_name} );
+        cursor.moveToLast();
+        double lat = cursor.getDouble(0);
+        Log.i(TAG, "getLatitudeT: " + lat);
+        db.close();
+        return lat;
 
-       SQLiteDatabase db = this.getWritableDatabase();
-       ContentValues contentValues = new ContentValues();
-       Log.i(TAG, "inserValues:  distance =  " + distance + "morning time  = " + morning_time + "evening time  = " + evening_time   );
+    }
 
-       if(distance == null || morning_time == null || evening_time == null  )
-           return false;
-       else
-       {
+    // to get longitude from task
+    Double getLongitudeST(String Task_name){
+        SQLiteDatabase db = this.getReadableDatabase();
 
-           contentValues.put("distance", distance);
-          contentValues.put("morning_time",  morning_time);
-           contentValues.put("evening_time", evening_time);
+        Cursor cursor = db.rawQuery("SELECT longitude from Saved_tasks where task_name = ? ",new String[] {"" +Task_name} );
+        cursor.moveToLast();
+        double longitude = cursor.getDouble(0);
+        Log.i(TAG, "getLongitudeT: " + longitude);
+        db.close();
+        return longitude;
+
+    }
+
+    String getSTaskPlace(String Task_name){
+        SQLiteDatabase db = this.getReadableDatabase();
+        Log.i(TAG, "getSTaskPlace: 6" + Task_name
+        );
+        String Place = "";
+        // if(IsTask(Task_name)){
+        Cursor cursor = db.rawQuery("SELECT Place_name from Saved_tasks where task_name = ? ",new String[] {"" +Task_name} );
+        if(cursor.moveToLast()){
+
+            Place = cursor.getString(0);
+            Log.i(TAG, "getSTaskPlace: " + cursor.getString(0));
 
 
-           Log.i(TAG, "insertValues: inserting");
-           Log.i(TAG, "inserValues:  distance =  " + distance + "morning time  = " + morning_time + "evening time  = " + evening_time   );
-
-           long result = db.insert("settings", null, contentValues);
-
-           Log.i(TAG, "insertValues: inserted");
-           db.close();
-           if (result == -1)
-               return false;
-           else
-               return true;
-
-       }
+            Log.i(TAG, "getSTaskPlace: " + cursor.getCount());
+            // Place = cursor.getString(4);
+            Log.i("Task Place name", cursor.getString(0));
+        }
+        db.close();
+        return Place;
+    }
 
 
-   }
+    public boolean setSettings(int distance, String morning_time, String  evening_time  ){
 
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        Log.i(TAG, "inserValues:  distance =  " + distance + "morning time  = " + morning_time + "evening time  = " + evening_time   );
+
+        if(distance < 500 || morning_time == null || evening_time == null  )
+            return false;
+        else {
+            contentValues.put("key", 1);
+            contentValues.put("distance", distance);
+            contentValues.put("morning_time", (morning_time));
+            contentValues.put("evening_time", (evening_time));
+
+
+            Log.i(TAG, "insertValues: inserting");
+            Log.i(TAG, "inserValues:  distance =  " + distance + "morning time string = " + String.valueOf(morning_time) + "evening time  = " + evening_time);
+            Cursor cursor = getSettings();
+
+            long result = db.update("settings", contentValues, "key = ?",new String[] {"1"});
+
+            Log.i(TAG, "insertValues: inserted");
+            db.close();
+            if (result == -1)
+                return false;
+            else
+                return true;
+
+        }
+
+
+    }
+
+    public boolean insertSettings(){
+        SQLiteDatabase db = getWritableDatabase();
+        Log.i(TAG, "setSettings: inserting");
+        String query = "insert into settings values(1,1000,'7:00am','8:00pm')";
+        db.execSQL(query);
+        return true;
+    }
+
+    Cursor getSettings(){
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "select * from settings";
+        Cursor cursor = db.rawQuery(query, null);
+        cursor.moveToLast();
+        Log.i(TAG, "getSettings: returining from cursor" +cursor.getColumnCount() + cursor.getCount());// cursor.getString(2) + cursor.getString(3) + cursor.getInt(0) + cursor.getInt(1) );
+        return cursor;
+    }
+    void tasks(){
+        ArrayList<String> tasks_today, tasks_pending;
+         Cursor cursor = getTask();
+        if(cursor.getCount() > 0) {
+            Log.i(TAG, "count" + String.valueOf(cursor.getCount()));
+            tasks_today = new ArrayList<>();
+            tasks_pending = new ArrayList<>();
+
+            if (cursor.moveToFirst()) {
+                do {
+                    Log.i(TAG, "onCreate: database date " + cursor.getString(1));
+                    Date date = new Date(cursor.getString(1));
+                    if (date.before(new Date(getDate("today")))) {
+                        tasks_pending.add(cursor.getString(0));
+                        Log.i(TAG, "onCreate: pending" + date);
+
+                    } else if (date.equals(new Date(getDate("today")))) {
+                        tasks_today.add(cursor.getString(0));
+                        Log.i(TAG, "onCreate: today " + date);
+
+                    }
+                } while (cursor.moveToNext());
+
+            }
+        }
+    }
+    ArrayList<String> getTodayTasks(){
+        ArrayList<String> tasks_today = new ArrayList<>();
+        Cursor cursor = getTask();
+        if(cursor.getCount() > 0) {
+            Log.i(TAG, "count" + String.valueOf(cursor.getCount()));
+            tasks_today = new ArrayList<>();
+            if (cursor.moveToFirst()) {
+                do {
+                    Log.i(TAG, "onCreate: database date " + cursor.getString(1));
+                    Date date = new Date(cursor.getString(1));
+                     if (date.equals(new Date(getDate("today")))) {
+                        tasks_today.add(cursor.getString(0));
+                        Log.i(TAG, "onCreate: today " + date);
+
+                    }
+                } while (cursor.moveToNext());
+
+            }
+        }
+        return tasks_today;
+    }
+
+
+
+    ArrayList<String> getPendingTasks(){
+        ArrayList<String> tasks_pending = new ArrayList<>();
+        Cursor cursor = getTask();
+        if(cursor.getCount() > 0) {
+            Log.i(TAG, "count" + String.valueOf(cursor.getCount()));
+
+            if (cursor.moveToFirst()) {
+                do {
+                    Log.i(TAG, "onCreate: database date " + cursor.getString(1));
+                    Date date = new Date(cursor.getString(1));
+                    if (date.before(new Date(getDate("today")))) {
+                        tasks_pending.add(cursor.getString(0));
+                        Log.i(TAG, "onCreate: pending" + date);
+                    }
+                } while (cursor.moveToNext());
+
+            }
+        }
+        return tasks_pending;
+    }
+
+
+
+    ArrayList<String> getUpcomingTasks(){
+        ArrayList<String> tasks_upcoming = new ArrayList<>();
+        Cursor cursor = getTask();
+        if(cursor.getCount() > 0) {
+            Log.i(TAG, "count" + String.valueOf(cursor.getCount()));
+
+            if (cursor.moveToFirst()) {
+                do {
+                    Log.i(TAG, "onCreate: database date " + cursor.getString(1));
+                    Date date = new Date(cursor.getString(1));
+                    if (date.after(new Date(getDate("today")))) {
+                        tasks_upcoming.add(cursor.getString(0));
+                        Log.i(TAG, "onCreate: pending" + date);
+                    }
+                } while (cursor.moveToNext());
+
+            }
+        }
+        return tasks_upcoming;
+    }
 }

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:gravity="center"
+        >
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Settings"
+            android:gravity="center"
+            android:textSize="40dp"
+            />
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:gravity="center"
+        >
+        <TextView
+            android:paddingLeft="40dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Proximity Radius : "
+            android:textSize="20dp"
+            android:id="@+id/text"/>
+        <EditText
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/radius"
+            android:text="1000"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="(in meters)"/>
+
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:gravity="center"
+        >
+
+        <TextView
+
+            android:gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Alert me on:"
+            android:textSize="20dp"
+            android:id="@+id/text2"/>
+
+        <Button
+
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:text="@string/set_date"
+            android:background="@color/button_blue"
+            android:layout_margin="15dp"
+            android:id="@+id/mrng"/>
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:gravity="center"
+        >
+        <TextView
+
+            android:gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Notify pending tasks: "
+            android:textSize="20dp"
+            android:id="@+id/text3"/>
+
+        <Button
+
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:text="@string/set_date"
+            android:background="@color/button_blue"
+            android:layout_margin="15dp"
+            android:id="@+id/eve"/>
+
+    </LinearLayout>
+    <Button
+        android:layout_margin="15dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/save"
+        android:text="Save"/>
+
+</LinearLayout>

@@ -70,6 +70,7 @@ public class View_Maps_Activity extends FragmentActivity implements OnMapReadyCa
                 .position(latLng)
                 .title(place_name));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+       
 
     }
 }

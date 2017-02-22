@@ -43,8 +43,6 @@ public class Location_represent extends FragmentActivity implements OnMapReadyCa
     LatLng userlat_lng;
     Database db = new Database(Location_represent.this);
     int flag = 0;
-    long MINIMUM_DISTANCECHANGE_FOR_UPDATE = 1; // in Meters
-    long MINIMUM_TIME_BETWEEN_UPDATE = 1000; // in Milliseconds
     long POINT_RADIUS = 100000; // in Meters
     long PROX_ALERT_EXPIRATION = 2000;
     private final String PROX_ALERT = "wise.microsoft.com.track_my_task.PROXIMITY_ALERT";
@@ -69,6 +67,7 @@ public class Location_represent extends FragmentActivity implements OnMapReadyCa
             Log.e(TAG, "onLocationChanged: " + location);
 
             mLastLocation.set(location);
+            addProximityAlert(userlat_lng.latitude, userlat_lng.longitude, "what ever");
 
             Log.i(TAG, "onLocationChanged: " + location.getLatitude());
             Log.i(TAG, "onLocationChanged: " + location.getLongitude());
@@ -93,8 +92,8 @@ public class Location_represent extends FragmentActivity implements OnMapReadyCa
     }
 
     LocationListener[] mLocationListeners = new LocationListener[]{
-        new LocationListener(LocationManager.GPS_PROVIDER),
-                new LocationListener(LocationManager.NETWORK_PROVIDER)
+            new LocationListener(LocationManager.GPS_PROVIDER),
+            new LocationListener(LocationManager.NETWORK_PROVIDER)
     };
 
 
@@ -150,8 +149,9 @@ public class Location_represent extends FragmentActivity implements OnMapReadyCa
             Log.d(TAG, "gps provider does not exist " + ex.getMessage());
         }
     }
-    public void addProximityAlert(double latitude, double longitude, String Task_name) {
 
+    public void addProximityAlert(double latitude, double longitude, String Task_name) {
+        ProximityReceiver pr = new ProximityReceiver();
         Intent intent = new Intent(PROX_ALERT);
         intent.putExtra("task_name", Task_name);
         PendingIntent proximityIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
@@ -174,7 +174,7 @@ public class Location_represent extends FragmentActivity implements OnMapReadyCa
                 proximityIntent // will be used to generate an Intent to fire when entry to or exit from the alert region is detected
         );
         IntentFilter filter = new IntentFilter(PROX_ALERT);
-        registerReceiver(new ProximityReceiver(), filter);
+        registerReceiver(pr, filter);
 
     }
 
@@ -185,11 +185,9 @@ public class Location_represent extends FragmentActivity implements OnMapReadyCa
 
         task_name = getIntent().getStringExtra("task_name");
         Log.i(TAG, "onCreate: " + task_name);
-
-        userlat_lng =  new LatLng(16.5673478, 81.522227);
-
-        //userlat_lng = db.getLatLng(task_name);
-
+        initializeLocationManager();
+        userlat_lng = db.getLatLngTask(task_name);
+        Log.i(TAG, "onCreate:  latlong" + userlat_lng.latitude + userlat_lng.longitude);
         Log.i(TAG, "onCreate: initializing location manger");
         initializeLocationManager();
         Log.i(TAG, "onCreate: initialized location manager");
@@ -198,19 +196,18 @@ public class Location_represent extends FragmentActivity implements OnMapReadyCa
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        Location dest = new Location("");
+        /*Location dest = new Location("");
         dest.setLatitude(userlat_lng.latitude);
         dest.setLongitude(userlat_lng.longitude);
         addMarker(dest);
 
-        addProximityAlert(userlat_lng.latitude, userlat_lng.longitude, task_name);
+        addProximityAlert(userlat_lng.latitude, userlat_lng.longitude, task_name);*/
     }
 
     public void addMarker(Location location) {
         LatLng currentLatLng = new LatLng(location.getLatitude(), location.getLongitude());
 
-        Marker mapMarker = googleMap.addMarker(new MarkerOptions()
-                .position(currentLatLng));
+        Marker mapMarker = googleMap.addMarker(new MarkerOptions().position(currentLatLng));
 
         mapMarker.setTitle("Hi");
 
@@ -223,7 +220,7 @@ public class Location_represent extends FragmentActivity implements OnMapReadyCa
         }
         Log.d(TAG, "Zoom done.............................");
 
-        //Toast.makeText(getBaseContext(), currentLatLng.toString(), Toast.LENGTH_SHORT);
+        Toast.makeText(getBaseContext(), currentLatLng.toString(), Toast.LENGTH_SHORT);
     }
 
 

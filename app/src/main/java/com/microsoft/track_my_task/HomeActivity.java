@@ -22,6 +22,7 @@ import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import java.util.ArrayList;
@@ -38,16 +39,18 @@ public class HomeActivity extends AppCompatActivity
     Cursor cursor;
     Context context;
     private final String TAG= "HomeActivity ";
-    ArrayList<String> tasks_today, tasks_pending, upcoming_list;
-    ListView view_today, view_pending, view_upcoming;
+    private ArrayList<String> tasks_today, tasks_pending, upcoming_list;
+    private ListView view_today, view_pending, view_upcoming;
     TextView today, pending, upcoming;
     Switch  startTracking;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
-        view_today = (ListView)findViewById(R.id.task_list_today);
+        
+        view_today = (ListView)findViewById(R.id.task_list_todayAdapter);
         view_pending = (ListView)findViewById(R.id.task_list_pending);
         view_upcoming = (ListView) findViewById(R.id.task_list_upcoming);
 
@@ -64,43 +67,17 @@ public class HomeActivity extends AppCompatActivity
         tasks_pending = new ArrayList<>();
         upcoming_list = new ArrayList<>();
 
-        cursor = db.getTask();
-        if(cursor.getCount() > 0) {
-            Log.i(TAG, "count"+ String.valueOf(cursor.getCount()));
+        initializeSettings();
 
-            if (cursor.moveToFirst()) {
-                do {
-                    Log.i(TAG, "onCreate: db date " + cursor.getString(1));
-                    Date date = new Date(cursor.getString(1));
-                    if (date.before(new Date(db.getDate("today")))) {
-                        tasks_pending.add(cursor.getString(0));
-                        Log.i(TAG, "onCreate: pending" + date);
-                        pending.setVisibility(View.VISIBLE);
+        tasks_today = db.getTodayTasks();
+        tasks_pending = db.getPendingTasks();
+        upcoming_list = db.getUpcomingTasks();
 
-
-                    } else
-                    if (date.equals(new Date(db.getDate("today")))) {
-
-                        tasks_today.add(cursor.getString(0));
-                        Log.i(TAG, "onCreate: task today" + cursor.getString(0));
-                        Log.i(TAG, "onCreate: today " + date);
-                        today.setVisibility(View.VISIBLE);
-
-                    } else {
-                        upcoming_list.add(cursor.getString(0));
-                        Log.i(TAG, "onCreate: upcoming" + date);
-                        upcoming.setVisibility(View.VISIBLE);
-                    }
-                } while (cursor.moveToNext());
-                Log.i(TAG, "onCreate: todays task" + tasks_today
-         );
-                db.close();
-            }
-        }
-
-        view_today.setAdapter(new ToDoList_Adapter(this, tasks_today  ));
+        view_today.setAdapter(new ToDoList_Adapter(this, tasks_today));
+        Log.i(TAG, "onCreate:  "  + tasks_today);
         view_pending.setAdapter(new ToDoList_Adapter(this, tasks_pending));
         view_upcoming.setAdapter(new ToDoList_Adapter(this, upcoming_list ));
+
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -120,10 +97,12 @@ public class HomeActivity extends AppCompatActivity
 
                         if(seltd_loc.equals("New Location")){
                             Intent intent = new Intent(HomeActivity.this, Add_Place.class);
+                            finish();
                             startActivity(intent);
                         } else if(seltd_loc.equals("New Task")){
                             Intent intent = new Intent(HomeActivity.this, Add_Task.class);
                             intent.putExtra("mode", "add");
+                            finish();
                             startActivity(intent);
                         }
                     }
@@ -145,6 +124,13 @@ public class HomeActivity extends AppCompatActivity
 
 
 
+
+
+
+
+
+
+
         // to get notification
 
 
@@ -162,10 +148,10 @@ public class HomeActivity extends AppCompatActivity
         minutes = calendar.get(Calendar.MINUTE);
         Log.i("hour", String.valueOf(hour));
 
-            Calendar cal = Calendar.getInstance();
-            //cal.set(Calendar.HOUR_OF_DAY, 9);
-            alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(),AlarmManager.INTERVAL_DAY,broadcast);
-            Log.i("alarm", " notify");
+        Calendar cal = Calendar.getInstance();
+        //cal.set(Calendar.HOUR_OF_DAY, 9);
+        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(),AlarmManager.INTERVAL_DAY,broadcast);
+        Log.i("alarm", " notify");
 
 
         startTracking.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -176,6 +162,7 @@ public class HomeActivity extends AppCompatActivity
 
                 if(isChecked){
                     Intent intent = new Intent(HomeActivity.this, Proximity_Alert_Activity.class);
+                    finish();
                     startActivity(intent);
                 }else{
 
@@ -230,17 +217,32 @@ public class HomeActivity extends AppCompatActivity
 
         if (id == R.id.My_loc) {
             Intent intent = new Intent(HomeActivity.this, My_Location.class);
+            finish();
             startActivity(intent);
         } else if (id == R.id.sTasks) {
             Intent intent = new Intent(HomeActivity.this, SavedTasks.class);
+            finish();
             startActivity(intent);
 
-        }
+        } //else if (id == R.id.nav_send) {
+
+        //}
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
 
+    public void initializeSettings(){
+        Cursor cursor1 = db.getSettings();
+        if(cursor1.getCount() != 0){
+            return;
+        }
+        else{
+            Log.i(TAG, "initializeSettings: " + "inserting....");
+            db.insertSettings();
+
+        }
+    }
 
 }

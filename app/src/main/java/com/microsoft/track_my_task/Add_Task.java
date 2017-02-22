@@ -72,10 +72,12 @@ public class Add_Task extends Activity {
                         if(seltd_loc.equals("My Locations")){
                             Intent intent = new Intent(Add_Task.this, My_Location.class);
                             intent.putExtra("task_name", task_name.getText().toString());
+                            finish();
                             startActivity(intent);
                         }else if(seltd_loc.equals("Add new")){
                             Intent intent = new Intent(Add_Task.this, MapsActivityNewPlace.class);
                             intent.putExtra("task_name", task_name.getText().toString());
+                            finish();
                             startActivity(intent);
                         }
                     }
@@ -115,6 +117,7 @@ public class Add_Task extends Activity {
                         Toast.makeText(Add_Task.this, "Task Name  ALREADY EXISTS", Toast.LENGTH_LONG).show();
                     } else {
                         Intent intent = new Intent(Add_Task.this, HomeActivity.class);
+                        finish();
                         startActivity(intent);
                     }
                 }
@@ -144,19 +147,5 @@ public class Add_Task extends Activity {
         Toast.makeText(this, dateView, Toast.LENGTH_SHORT).show();
     }
 
-   /* protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
-        if (requestCode == 1) {
-            if(resultCode == Activity.RESULT_OK){
-                task_name.setText(data.getStringExtra("Place_name"));
-                latitude = data.getDoubleExtra("latitude", 0);
-                longitude = data.getDoubleExtra("longitude", 0);
-                TlatLng = new LatLng(latitude, longitude);
-                Log.i("lat_lng", TlatLng.toString());
-            }
-            if (resultCode == Activity.RESULT_CANCELED) {
-                //Write your code if there's no result
-            }
-        }
-    }//onActivityResult*/
 }

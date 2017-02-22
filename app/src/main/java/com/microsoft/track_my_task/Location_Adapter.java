@@ -24,7 +24,7 @@ class Location_Adapter extends BaseAdapter {
     private Context context;
     private ArrayList<LatLng> lat_lngs;
     private LatLng Lat_Lng;
-    Database database;
+   Database database;
     private static LayoutInflater inflater = null;
     public Location_Adapter(My_Location locations, ArrayList<String> my_loc, ArrayList<LatLng> lat_lng) {
         // TODO Auto-generated constructor stub

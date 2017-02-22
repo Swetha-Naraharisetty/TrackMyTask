@@ -26,29 +26,25 @@ import java.util.ArrayList;
  */
 //for all the tasks to get started at once
 public class Proximity_Alert_Activity extends Activity {
-    long MINIMUM_DISTANCECHANGE_FOR_UPDATE = 1; // in Meters
-    long MINIMUM_TIME_BETWEEN_UPDATE = 1000; // in Milliseconds
-    long POINT_RADIUS = 100000; // in Meters
+    private static final int LOCATION_INTERVAL = 1000;
+    private static final float LOCATION_DISTANCE = 10f;
+    long POINT_RADIUS ; // in Meters
     long PROX_ALERT_EXPIRATION = 2000;
     ArrayList<LatLng> latLngs;
     Cursor cursor;
-    private LocationManager locationManager;
+    private LocationManager mLocationManager;
+    Location mLastLocation;
     String TAG = "info";
     Database db = new Database(Proximity_Alert_Activity.this);
     Location_represent lr = new Location_represent();
     private final String PROX_ALERT = "wise.microsoft.com.track_my_task.PROXIMITY_ALERT";
-
-    //settings alert
-    public Proximity_Alert_Activity() {
-        //constructor
-
-    }
 
 
     public void addProximityAlert(double latitude, double longitude, String Task_name) {
 
         Intent intent = new Intent(PROX_ALERT);
         intent.putExtra("task_name", Task_name);
+        Log.i(TAG, "addProximityAlert: "+ Task_name);
         PendingIntent proximityIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -61,7 +57,10 @@ public class Proximity_Alert_Activity extends Activity {
             // for ActivityCompat#requestPermissions for more details.
             return;
         }
-        locationManager.addProximityAlert(
+        Cursor cursor = db.getSettings();
+        POINT_RADIUS = cursor.getInt(1);
+        Log.i(TAG, "addProximityAlert: " + POINT_RADIUS);
+        mLocationManager.addProximityAlert(
                 latitude, // the latitude of the central point of the alert region
                 longitude, // the longitude of the central point of the alert region
                 POINT_RADIUS, // the radius of the central point of the alert region, in meters
@@ -72,49 +71,39 @@ public class Proximity_Alert_Activity extends Activity {
         registerReceiver(new ProximityReceiver(), filter);
 
     }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.content_home);
-       // lr.initializeLocationManager();
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-        locationManager.requestLocationUpdates(
-                LocationManager.GPS_PROVIDER,
+        // lr.initializeLocationManager();
+        initializeLocationManager();
 
-                MINIMUM_TIME_BETWEEN_UPDATE,
-
-                MINIMUM_DISTANCECHANGE_FOR_UPDATE,
-
-                new MyLocationListener()
-
-        );
 
         latLngs = db.getLatLngsT();
         cursor = db.getTask();
-        cursor.moveToNext();
-        for (LatLng latLng: latLngs) {
-            addProximityAlert(latLng.latitude, latLng.longitude, cursor.getString(0));
-            Log.i(TAG, "onCreate: " + cursor.getString(0));
-            cursor.moveToNext();
-        }
+
 
     }
-    class MyLocationListener implements LocationListener{
+
+    class LocationListener implements android.location.LocationListener{
+        public LocationListener(String provider){
+            mLastLocation = new Location(provider);
+        }
         @Override
         public void onLocationChanged(Location location) {
             Log.i(TAG, "onLocationChanged: location changed");
             Toast.makeText(getBaseContext(), "location changed", Toast.LENGTH_LONG).show();
+            int count = 0;
+            for (LatLng latLng: latLngs) {
+                addProximityAlert(latLng.latitude, latLng.longitude, cursor.getString(0));
+                Log.i(TAG, "onCreate: " + cursor.getString(0));
+                Log.i(TAG, "onCreate: added proximity alert to the location" + String.valueOf(latLng.latitude) + String.valueOf(latLng.longitude));
+                cursor.moveToNext();
+                count++;
+                if(count == latLngs.size()){
+                    break;
+                }
+            }
         }
 
         @Override
@@ -124,7 +113,6 @@ public class Proximity_Alert_Activity extends Activity {
 
         @Override
         public void onProviderEnabled(String provider) {
-
         }
 
         @Override
@@ -132,4 +120,60 @@ public class Proximity_Alert_Activity extends Activity {
 
         }
     }
+
+    LocationListener[] mLocationListeners = new Proximity_Alert_Activity.LocationListener[]{
+            new LocationListener(LocationManager.GPS_PROVIDER),
+            new LocationListener(LocationManager.NETWORK_PROVIDER)
+    };
+    public void initializeLocationManager() {
+        Log.e(TAG, "initializeLocationManager");
+        if (mLocationManager == null) {
+            mLocationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
+        }
+        try {
+            mLocationManager.requestLocationUpdates(
+                    LocationManager.NETWORK_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE,
+                    mLocationListeners[1]);
+            Log.i(TAG, "onCreate: location requested");
+        } catch (SecurityException ex) {
+            Log.i(TAG, "fail to request location update, ignore", ex);
+        } catch (IllegalArgumentException ex) {
+            Log.d(TAG, "network provider does not exist, " + ex.getMessage());
+        }
+        try {
+            mLocationManager.requestLocationUpdates(
+                    LocationManager.GPS_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE,
+                    mLocationListeners[0]);
+            Log.i(TAG, "onCreate: location requested");
+
+        } catch (SecurityException ex) {
+            Log.i(TAG, "fail to request location update, ignore", ex);
+        } catch (IllegalArgumentException ex) {
+            Log.d(TAG, "gps provider does not exist " + ex.getMessage());
+        }
+    }
+    public void onDestroy() {
+        Log.e(TAG, "onDestroy");
+        super.onDestroy();
+        if (mLocationManager != null) {
+            for (int i = 0; i < mLocationListeners.length; i++) {
+                try {
+                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        // TODO: Consider calling
+                        //    ActivityCompat#requestPermissions
+                        // here to request the missing permissions, and then overriding
+                        //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                        //                                          int[] grantResults)
+                        // to handle the case where the user grants the permission. See the documentation
+                        // for ActivityCompat#requestPermissions for more details.
+                        return;
+                    }
+                    mLocationManager.removeUpdates(mLocationListeners[i]);
+                } catch (Exception ex) {
+                    Log.i(TAG, "fail to remove location listners, ignore", ex);
+                }
+            }
+        }
+    }
+
 }

@@ -41,6 +41,13 @@
                     android:background="@color/blue_cement"
                     android:visibility="gone"
                     />
+                <ListView
+                    android:layout_width="match_parent"
+                    android:layout_height="287dp"
+                    android:id="@+id/task_list_pending"
+                    />
+
+                </LinearLayout>
 
                 <LinearLayout
                     android:layout_weight="1"
@@ -60,17 +67,9 @@
                     <ListView
                         android:layout_width="match_parent"
                         android:layout_height="160dp"
-                        android:id="@+id/task_list_today"
+                        android:id="@+id/task_list_todayAdapter"
                         />
                 </LinearLayout>
-
-                <ListView
-                    android:layout_width="match_parent"
-                    android:layout_height="287dp"
-                    android:id="@+id/task_list_pending"
-                    />
-
-            </LinearLayout>
 
             <LinearLayout
                 android:layout_weight="1"
@@ -95,10 +94,14 @@
                     />
             </LinearLayout>
 
+            </LinearLayout>
+
+
+
 
 
         </LinearLayout>
-    </LinearLayout>
+
 
 
 
